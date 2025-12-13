@@ -1,0 +1,24 @@
+@use 'variables' as *;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: $text-color;
+  background-color: $light-bg;
+  padding: $spacing-md;
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-md;
+}
+
+// Import component styles
+@import '../components/DiceRoller/DiceRoller';

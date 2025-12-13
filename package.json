@@ -1,0 +1,22 @@
+{
+  "name": "dice-web-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@material/textfield": "^14.0.0",
+    "@material/theme": "^14.0.0",
+    "vue": "^3.3.4",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.3.4",
+    "sass": "^1.96.0",
+    "vite": "^4.4.9"
+  }
+}
