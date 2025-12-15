@@ -78,6 +78,39 @@
                 </div>
             </div>
         </div>
+        <!-- Level Badge (top-right of the whole header) -->
+        <div class="level-badge">
+            <div class="level-number">{{ character.level }}</div>
+            <div class="level-controls">
+                <button type="button" class="lvl-btn" @click="decrementLevel">−</button>
+                <button type="button" class="lvl-btn" @click="incrementLevel">+</button>
+            </div>
+            <div class="level-label">LEVEL</div>
+        </div>
+    </div>
+    <div class="stats-section">
+        <div class="defense-section">
+            <div class="def-card">
+                <div class="def-title">Evasion</div>
+                <div class="def-sub">Start at 10</div>
+            </div>
+            <div class="def-card">
+                <div class="def-title">Armor</div>
+                <div class="def-sub"></div>
+            </div>
+        </div>
+        <div class="traits-section">
+            <div v-for="key in traitsOrder" :key="key" class="trait-card">
+                <div class="trait-header">{{ key.toUpperCase() }}</div>
+                <div class="trait-controls">
+                    <button type="button" class="trait-btn" @click="decTrait(key)">−</button>
+                    <input class="trait-value" type="number" :min="-1" :max="2" :step="1"
+                           :value="character.traits[key]"
+                           @input="setTrait(key, Number($event.target.value))">
+                    <button type="button" class="trait-btn" @click="incTrait(key)">+</button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -98,7 +131,18 @@ const character = ref({
     name: '',
     pronouns: '',
     heritage: '',
-    subclass: ''
+    subclass: '',
+    level: 1,
+    traits: {
+        Agility: 0,
+        Strength: 0,
+        Finesse: 0,
+        Instinct: 0,
+        Presence: 0,
+        Knowledge: 0
+    },
+    evasion: 10,
+    armor: 0
 })
 
 // Format domain names for display
@@ -133,6 +177,34 @@ const generateRandomName = () => {
     character.value.name = `${firstName} ${lastName}`
 }
 
+const incrementLevel = () => {
+    const current = Number(character.value.level) || 1
+    character.value.level = Math.min(20, current + 1)
+     if (character.value.level > 10 ) {
+        character.value.level = 10
+    }
+}
+
+const decrementLevel = () => {
+    const current = Number(character.value.level) || 1
+    character.value.level = Math.max(1, current - 1)
+}
+
+const traitsOrder = ['Agility', 'Strength', 'Finesse', 'Instinct', 'Presence', 'Knowledge']
+
+const clampTrait = (v) => Math.max(-1, Math.min(2, v))
+const incTrait = (key) => {
+    const current = Number(character.value.traits[key]) || 0
+    character.value.traits[key] = clampTrait(current + 1)
+}
+const decTrait = (key) => {
+    const current = Number(character.value.traits[key]) || 0
+    character.value.traits[key] = clampTrait(current - 1)
+}
+const setTrait = (key, v) => {
+    character.value.traits[key] = clampTrait(v)
+}
+
 // Initialize
 onMounted(() => {
     selectedClass.value = ''
@@ -150,6 +222,8 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
+    position: relative;
+    padding-right: 100px;
 }
 
 .class-section {
@@ -243,6 +317,7 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     gap: 0.75rem;
     width: 100%;
     align-items: stretch;
+    justify-content: space-between;
 }
 
 .domain-pill {
@@ -255,6 +330,7 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     align-items: center;
     transition: all 0.2s ease;
     flex: 1;
+    min-width: 0;
 }
 
 .domain-pill:hover {
@@ -272,6 +348,65 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     font-weight: 600;
     color: #212529;
     text-transform: capitalize;
+}
+
+.level-badge {
+    position: absolute;
+    top: 14px;
+    right: 0;
+    width: 80px;
+    min-width: 80px;
+    height: 80px;
+    border: 2px solid #cfd3d7;
+    border-radius: 10px;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.level-number {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #3a4a6b;
+    line-height: 1;
+    transform: translateY(10px);
+}
+
+.level-controls {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 4px;
+}
+
+.lvl-btn {
+    border: 1px solid #cfd3d7;
+    background: #f8f9fa;
+    color: #3a4a6b;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+
+.lvl-btn:hover {
+    background: #e9ecef;
+}
+
+.level-label {
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #3a4a6b;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
 }
 
 /* Form Row Styles */
@@ -316,20 +451,135 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
+.stats-section {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.defense-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+.def-card {
+    border: 2px solid #cfd3d7;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0.75rem 1rem;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.def-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #3a4a6b;
+    letter-spacing: 0.5px;
+}
+
+.def-sub {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.traits-section {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+}
+
+.trait-card {
+    border: 2px solid #cfd3d7;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0.5rem 0.5rem 0.75rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.trait-header {
+    background: #3a4a6b;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 4px 6px;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.trait-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.trait-btn {
+    border: 1px solid #cfd3d7;
+    background: #f8f9fa;
+    color: #3a4a6b;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.trait-btn:hover {
+    background: #e9ecef;
+}
+
+.trait-value {
+    width: 42px;
+    height: 30px;
+    border: 2px solid #cfd3d7;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 700;
+    color: #3a4a6b;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .character-container {
         flex-direction: column;
         gap: 1rem;
+        padding-right: 0;
     }
     .domains-container {
         flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
     }
-
+    .domain-pill {
+        flex: 1;
+    }
+    .level-badge {
+        position: static;
+        margin-top: 0.5rem;
+        width: 100%;
+        height: 60px;
+    }
     .class-section,
     .character-details {
         width: 100%;
         max-width: 100%;
+    }
+    .stats-section {
+        grid-template-columns: 1fr;
+    }
+    .traits-section {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 </style>
