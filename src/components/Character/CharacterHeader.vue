@@ -15,11 +15,11 @@
             <!-- Domain Display Section -->
             <div v-if="selectedClass" class="domains-container">
                 <div class="domain-pill" v-if="selectedClass.domain_1">
-                    <span class="domain-label">Primary Domain:</span>
+                    <span class="domain-label">1° Domain:</span>
                     <span class="domain-value">{{ formatDomain(selectedClass.domain_1) }}</span>
                 </div>
                 <div class="domain-pill" v-if="selectedClass.domain_2">
-                    <span class="domain-label">Secondary Domain:</span>
+                    <span class="domain-label">2° Domain:</span>
                     <span class="domain-value">{{ formatDomain(selectedClass.domain_2) }}</span>
                 </div>
             </div>
@@ -173,17 +173,18 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
 .form-select,
 .form-input {
     width: 100%;
-    padding: 12px 16px;
+    padding: 24px 16px 12px 16px;
     font-size: 1rem;
     line-height: 1.5;
     color: #333;
     background-color: #fff;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
+    border: 2px solid #cfd3d7;
+    border-radius: 10px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     box-sizing: border-box;
-    height: 45px;
+    height: 52px;
     cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .form-select {
@@ -192,6 +193,11 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     background-position: right 0.75rem center;
     background-size: 16px 12px;
     appearance: none;
+    padding-top: 20px;
+    padding-right: 44px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+    line-height: 1.2;
 }
 
 .form-input {
@@ -211,33 +217,32 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
 
 .form-label {
     position: absolute;
-    top: 12px;
-    left: 16px;
-    color: #6c757d;
-    background: white;
-    padding: 0 4px;
-    transition: all 0.2s ease;
+    top: 8px;
+    left: 14px;
+    color: #3a4a6b;
+    background: transparent;
+    padding: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.2s ease;
     pointer-events: none;
     transform-origin: left top;
 }
 
 .form-select:focus+.form-label,
-.form-select:not([value=""])+.form-label,
-.form-input:focus+.form-label,
-.form-input:not(:placeholder-shown)+.form-label {
-    transform: translateY(-1.5rem) scale(0.85);
-    color: #007bff;
-    left: 12px;
-    padding: 0 4px;
+.form-input:focus+.form-label {
+    color: #2d5bd1;
 }
 
 /* Domain Styles */
 .domains-container {
     margin: 1rem 0;
     display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    flex-direction: row;
+    gap: 0.75rem;
     width: 100%;
+    align-items: stretch;
 }
 
 .domain-pill {
@@ -249,6 +254,7 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s ease;
+    flex: 1;
 }
 
 .domain-pill:hover {
@@ -315,6 +321,9 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     .character-container {
         flex-direction: column;
         gap: 1rem;
+    }
+    .domains-container {
+        flex-direction: column;
     }
 
     .class-section,
