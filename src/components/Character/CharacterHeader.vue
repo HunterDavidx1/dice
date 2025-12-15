@@ -89,17 +89,29 @@
         </div>
     </div>
     <div class="stats-section">
-        <div class="defense-section">
+        <div class="stats-cards">
             <div class="def-card">
-                <div class="def-title">Evasion</div>
+                <div class="def-header evasion">EVASION</div>
+                <div class="def-controls">
+                    <button type="button" class="trait-btn" @click="decEvasion">−</button>
+                    <input class="def-value" type="number" min="0" max="20" step="1"
+                           :value="character.evasion"
+                           @input="setEvasion(Number($event.target.value))">
+                    <button type="button" class="trait-btn" @click="incEvasion">+</button>
+                </div>
                 <div class="def-sub">Start at 10</div>
             </div>
             <div class="def-card">
-                <div class="def-title">Armor</div>
+                <div class="def-header armor">ARMOR</div>
                 <div class="def-sub"></div>
+                <div class="def-controls">
+                    <button type="button" class="trait-btn" @click="decArmor">−</button>
+                    <input class="def-value" type="number" min="0" max="20" step="1"
+                           :value="character.armor"
+                           @input="setArmor(Number($event.target.value))">
+                    <button type="button" class="trait-btn" @click="incArmor">+</button>
+                </div>
             </div>
-        </div>
-        <div class="traits-section">
             <div v-for="key in traitsOrder" :key="key" class="trait-card">
                 <div class="trait-header">{{ key.toUpperCase() }}</div>
                 <div class="trait-controls">
@@ -108,6 +120,9 @@
                            :value="character.traits[key]"
                            @input="setTrait(key, Number($event.target.value))">
                     <button type="button" class="trait-btn" @click="incTrait(key)">+</button>
+                </div>
+                <div class="trait-verbs">
+                    <div class="verb" v-for="v in traitVerbs[key]" :key="v">{{ v }}</div>
                 </div>
             </div>
         </div>
@@ -119,6 +134,7 @@
 import { ref, onMounted, watch } from 'vue'
 import classesData from '../../assets/data/classes.json'
 import namesData from '../../assets/data/names.json'
+import armorData from '../../assets/data/armor.json'
 
 const emit = defineEmits(['class-selected', 'domains-selected', 'character-update'])
 
@@ -134,12 +150,12 @@ const character = ref({
     subclass: '',
     level: 1,
     traits: {
-        Agility: 0,
+        Agility: -1,
         Strength: 0,
         Finesse: 0,
-        Instinct: 0,
-        Presence: 0,
-        Knowledge: 0
+        Instinct: 2,
+        Presence: 1,
+        Knowledge: 1
     },
     evasion: 10,
     armor: 0
@@ -160,6 +176,35 @@ const onClassChange = () => {
         })
         // Reset subclass when class changes
         character.value.subclass = ''
+        const s = selectedClass.value.suggested_traits
+        if (s && Array.isArray(traitsOrder)) {
+            const vals = String(s).split(',').map(v => Number(String(v).trim().replace('+', '')))
+            if (vals.length === traitsOrder.length) {
+                traitsOrder.forEach((k, i) => {
+                    character.value.traits[k] = clampTrait(vals[i])
+                })
+            }
+        }
+        if (selectedClass.value.evasion) {
+            character.value.evasion = clamp20(Number(selectedClass.value.evasion))
+        }
+        const armorName = selectedClass.value.suggested_armor
+        if (armorName) {
+            const a = armorData.find(x => x.name === armorName)
+            if (a && a.base_score) {
+                character.value.armor = clamp20(Number(a.base_score))
+            } else {
+                character.value.armor = 0
+            }
+            const ft = a?.feat_text || ''
+            const m = ft.match(/([+-]\d+)\s*to\s*Evasion/i)
+            if (m) {
+                const adj = Number(m[1])
+                if (!Number.isNaN(adj)) {
+                    character.value.evasion = clamp20(Number(character.value.evasion) + adj)
+                }
+            }
+        }
     }
 }
 
@@ -204,6 +249,23 @@ const decTrait = (key) => {
 const setTrait = (key, v) => {
     character.value.traits[key] = clampTrait(v)
 }
+
+const traitVerbs = {
+    Agility: ['Sprint', 'Leap', 'Maneuver'],
+    Strength: ['Lift', 'Smash', 'Grapple'],
+    Finesse: ['Control', 'Hide', 'Tinker'],
+    Instinct: ['Perceive', 'Sense', 'Navigate'],
+    Presence: ['Charm', 'Perform', 'Deceive'],
+    Knowledge: ['Recall', 'Analyze', 'Comprehend']
+}
+
+const clamp20 = (v) => Math.max(0, Math.min(20, v))
+const incEvasion = () => { character.value.evasion = clamp20(Number(character.value.evasion) + 1) }
+const decEvasion = () => { character.value.evasion = clamp20(Number(character.value.evasion) - 1) }
+const setEvasion = (v) => { character.value.evasion = clamp20(v) }
+const incArmor = () => { character.value.armor = clamp20(Number(character.value.armor) + 1) }
+const decArmor = () => { character.value.armor = clamp20(Number(character.value.armor) - 1) }
+const setArmor = (v) => { character.value.armor = clamp20(v) }
 
 // Initialize
 onMounted(() => {
@@ -352,7 +414,7 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
 
 .level-badge {
     position: absolute;
-    top: 14px;
+    top: 8px;
     right: 0;
     width: 80px;
     min-width: 80px;
@@ -371,7 +433,7 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     font-weight: 700;
     color: #3a4a6b;
     line-height: 1;
-    transform: translateY(10px);
+    transform: translateY(0);
 }
 
 .level-controls {
@@ -454,39 +516,82 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
 .stats-section {
     margin-top: 1rem;
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 1fr;
     gap: 1rem;
     align-items: start;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-right: 100px;
 }
 
-.defense-section {
+.stats-cards {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(8, 1fr);
     gap: 0.75rem;
+    position: relative;
 }
+
+.defense-section { display: contents; }
 
 .def-card {
     border: 2px solid #cfd3d7;
     border-radius: 10px;
     background: #fff;
-    padding: 0.75rem 1rem;
-    min-height: 90px;
+    padding: 0.4rem 0.5rem 0.6rem 0.5rem;
+    min-height: 72px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     box-shadow: inset 0 1px 0 rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.02);
 }
 
-.def-title {
-    font-size: 0.8rem;
+.def-header {
+    background: #3a4a6b;
+    color: #fff;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: #3a4a6b;
-    letter-spacing: 0.5px;
+    text-align: center;
+    padding: 3px 6px;
+    border-radius: 8px;
+    margin-bottom: 0.35rem;
 }
+.def-header.evasion { background: #2e7d32; }
+.def-header.armor { background: #6c757d; }
 
 .def-sub {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: #6c757d;
+    text-align: right;
+    font-style: italic;
+    margin-top: 4px;
+    margin-bottom: 0.2rem;
+}
+
+.def-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.def-controls .trait-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+}
+
+.def-value {
+    width: 52px;
+    height: 28px;
+    border: 2px solid #cfd3d7;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 700;
+    color: #3a4a6b;
+    font-size: 0.95rem;
+    line-height: 26px;
 }
 
 .traits-section {
@@ -549,6 +654,14 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     color: #3a4a6b;
 }
 
+.trait-verbs {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-align: center;
+    line-height: 1.1;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .character-container {
@@ -577,6 +690,12 @@ const pronouns = ['He/Him/His', 'She/Her/Hers', 'They/Them/Theirs'];
     }
     .stats-section {
         grid-template-columns: 1fr;
+    }
+    .stats-cards::after {
+        display: none;
+    }
+    .stats-divider {
+        display: none;
     }
     .traits-section {
         grid-template-columns: repeat(3, 1fr);
